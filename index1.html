@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>VoiceAnalyzer Pro</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<div id="speechContent"></div>
+
+  <link rel="stylesheet" href="css/file1.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+      color: #f5f5f5;
+    }
+
+    .hero {
+      padding: 60px 20px 30px;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.75);
+      box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+    }
+
+    .section-box {
+      margin: 40px auto;
+      max-width: 900px;
+      padding: 20px;
+      background: rgba(10, 20, 20, 0.6);
+      border: 2px solid #00ffff;
+      border-radius: 12px;
+    }
+
+    .controls button,
+    #exportPdfBtn,
+    #ageEnterBtn {
+      background: #00ffff;
+      color: #000;
+      border: none;
+      padding: 12px 28px;
+      font-size: 1.1rem;
+      border-radius: 10px;
+      margin: 10px 5px;
+      cursor: pointer;
+      transition: 0.3s ease;
+    }
+
+    .controls button:hover,
+    #exportPdfBtn:hover,
+    #ageEnterBtn:hover {
+      background: #ff00ff;
+      color: #fff;
+    }
+
+    #ageInputBox {
+      max-width: 400px;
+      margin: 20px auto;
+      text-align: center;
+      animation: fadeIn 1.5s ease-in-out;
+    }
+
+    #childAge {
+      padding: 10px;
+      font-size: 1rem;
+      width: 100px;
+      border-radius: 8px;
+      text-align: center;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+    }
+
+    #gaugeCanvas, #visualizer {
+      display: block;
+      margin: 20px auto;
+      background-color: #111;
+      border: 1px solid #444;
+      border-radius: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      color: #fff;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: center;
+      border-bottom: 1px solid #444;
+    }
+
+    th {
+      background-color: #0c0c0c;
+      color: #00ffff;
+    }
+
+    td {
+      background-color: #1c1c1c;
+      font-weight: bold;
+    }
+
+    #feedback {
+      font-size: 1rem;
+      color: #fff;
+      font-weight: 500;
+      background-color: #111;
+      padding: 0.75rem;
+      border-radius: 8px;
+      animation: slideIn 0.8s ease-in-out;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 0.9rem;
+      padding: 20px;
+      color: #aaa;
+      background: #000;
+      margin-top: 60px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-50px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <h1>🎤 SMART LISTENER </h1>
+    <p>Your AI-powered speech coach for clarity and confidence.</p>
+    <div id="ageInputBox">
+      <label for="childAge">Enter Child's Age (2–6):</label>
+      <input type="number" id="childAge" min="2" max="10" value="6" />
+      <button id="ageEnterBtn">Enter</button>
+    </div>
+    <div class="controls">
+      <button id="startBtn">Start Recording</button>
+      <button id="stopBtn">Stop</button>
+      <p id="listeningStatus"></p>
+    </div>
+  </header>
+
+  <main class="content">
+    <section class="section-box">
+      <canvas id="visualizer" width="600" height="100"></canvas>
+      <canvas id="gaugeCanvas" width="300" height="200"></canvas>
+    </section>
+
+    <section class="section-box">
+      <h2>📊 Live Metrics</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Speaking Rate</th>
+            <th>Pauses</th>
+            <th>Volume</th>
+            <th>Pitch</th>
+            <th>Score</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td id="rate">-</td>
+            <td id="pauses">-</td>
+            <td id="volume">-</td>
+            <td id="pitch">-</td>
+            <td id="score">-</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section-box">
+      <h2>🧠 Acoustic Insights</h2>
+      <ul>
+        <li>Mean Pitch: <span id="meanPitch">-</span></li>
+        <li>Pitch Range: <span id="pitchRange">-</span></li>
+        <li>Speaking Rate: <span id="autismRate">-</span></li>
+        <li>Pause Frequency: <span id="pauseFreq">-</span></li>
+        <li>Jitter: <span id="jitter">-</span></li>
+        <li>Loudness: <span id="loudness">-</span></li>
+      </ul>
+    </section>
+
+    <section class="section-box">
+      <h2>🎯 Ideal Speaker Metrics</h2>
+      <ul>
+        <li>Speaking Rate: 2.5 – 3.5 words/sec</li>
+        <li>Volume: 40 – 70%</li>
+        <li>Pitch: 100 – 250 Hz</li>
+        <li>Pauses: less than 3</li>
+        <li>Jitter: 0.05–0.30 ms</li>
+        <li>loudness as per age input : 40 -60 </li>
+      </ul>
+    </section>
+
+    <section class="section-box">
+      <h2>💡 Suggestions</h2>
+      <p id="feedback">-</p>
+    </section>
+
+    <section class="section-box">
+      <button id="exportPdfBtn">EXPORT TO PDF</button>
+    </section>
+  </main>
+
+  <footer>
+    <p>🚀 Built for BYTE BATTLE 2025 — By [Team SWAR MUMMA]</p>
+  </footer>
+
+  <script src="js/java1.js"></script>
+</body>
+</html>
